@@ -111,14 +111,14 @@ Write a 3-paragraph clinical, data-driven forensic narrative for executives that
 
 Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative."""
 
-                        message = client.messages.create(
-                            model="llama-3-70b-versatile",
+                        message = client.chat.completions.create(
+                            model="llama3-70b-8192",
                             max_tokens=500,
                             messages=[
                                 {"role": "user", "content": prompt}
                             ]
                         )
-                        return message.content[0].text
+                        return message.choices[0].message.content
                     except Exception as e:
                         return f"Unable to generate narrative: {str(e)}"
                 
