@@ -45,7 +45,7 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
     # CHART GRID
     col_a, col_b = st.columns([3, 2])
     with col_a:
-        st.plotly_chart(plot_delay_distribution(df), use_container_width=True)
+        st.plotly_chart(plot_delay_distribution(df), width='stretch')
     with col_b:
         st.markdown(f"""
         <div style="background: #252422; padding: 20px; border-radius: 4px; color: #FFFCF2;">
@@ -62,12 +62,12 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
     with col_c:
         if os.path.exists(shap_path):
             shap_df = pd.read_csv(shap_path)
-            st.plotly_chart(plot_shap_global_importance(shap_df, params['feature_cols']), use_container_width=True)
+            st.plotly_chart(plot_shap_global_importance(shap_df, params['feature_cols']), width='stretch')
     with col_d:
-        st.plotly_chart(plot_factory_performance(df), use_container_width=True)
+        st.plotly_chart(plot_factory_performance(df), width='stretch')
         
     st.markdown("---")
-    st.plotly_chart(plot_priority_breakdown(df), use_container_width=True)
+    st.plotly_chart(plot_priority_breakdown(df), width='stretch')
 
 else:
     st.error("Data files not found. Please ensure precompute.py has been run.")

@@ -40,12 +40,12 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
             "Model Fidelity (R2 Score)"
         ],
         "Value": [
-            summary['total_deliveries'],
-            summary['delayed_deliveries'],
+            str(summary['total_deliveries']),
+            str(summary['delayed_deliveries']),
             f"{summary['baseline_total_reward']:,.2f}",
             f"{summary['optimized_total_reward']:,.2f}",
-            summary['deliveries_rescheduled'],
-            summary['deliveries_factory_swapped'],
+            str(summary['deliveries_rescheduled']),
+            str(summary['deliveries_factory_swapped']),
             f"{summary['model_test_r2']*100:.2f}%"
         ]
     }

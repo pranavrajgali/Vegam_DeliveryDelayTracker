@@ -65,7 +65,7 @@ if os.path.exists(report_path) and os.path.exists(params_path):
         st.metric("DISPATCH RANK", f"#{int(row['dispatch_rank'])}")
         
     with col_shap:
-        st.plotly_chart(plot_shap_waterfall(row, params['feature_cols']), use_container_width=True)
+        st.plotly_chart(plot_shap_waterfall(row, params['feature_cols']), width='stretch')
         
     st.markdown("---")
     

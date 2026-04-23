@@ -36,7 +36,7 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
     st.markdown("---")
     
     # Comparison Chart
-    st.plotly_chart(plot_reward_comparison(summary), use_container_width=True)
+    st.plotly_chart(plot_reward_comparison(summary), width='stretch')
     
     st.subheader(f"Dispatch Priority Ranking — {selected_date}")
     
@@ -53,7 +53,7 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
         'PRED DELAY (H)', 'RISK', 'ACTION', 'RECOMMENDATION'
     ]
     
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+    st.dataframe(styled_df, width='stretch', hide_index=True)
     
     st.markdown("### Strategy Breakdown")
     col_x, col_y = st.columns(2)
