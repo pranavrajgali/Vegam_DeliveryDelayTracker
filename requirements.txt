@@ -7,3 +7,4 @@ tqdm==4.67.3
 joblib==1.5.3
 plotly==6.7.0
 pyarrow==23.0.1
+groq==0.10.0

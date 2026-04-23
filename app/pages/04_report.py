@@ -4,6 +4,12 @@ import os
 import json
 from components.style import apply_custom_style
 
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+
 apply_custom_style()
 
 st.title("📄 FORENSIC REPORT")
@@ -72,16 +78,104 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
     st.subheader("AI FORENSIC ANALYSIS")
     st.info("System utilizing Llama-3-70B (Groq) for automated narrative generation.")
     
-    # Placeholder for LLM Report
-    st.markdown(f"""
-    <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
-        <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
-        <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
-        <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
-        <p><b>Prescription:</b> By implementing the <b>{summary['deliveries_rescheduled'] + summary['deliveries_factory_swapped']}</b> proposed interventions, the system can recapture approximately <b>{summary['total_reward_gain']:,.0f} points</b> in reward value, representing a <b>{summary['pct_improvement']}%</b> efficiency gain.</p>
-        <p><b>Conclusion:</b> Immediate execution of the Day 1 Dispatch Ranking is recommended to mitigate the {summary['delayed_deliveries']} identified high-risk events.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Groq API Integration
+    if GROQ_AVAILABLE:
+        try:
+            # Get API key from environment or Streamlit secrets
+            groq_api_key = os.getenv('GROQ_API_KEY')
+            if not groq_api_key and hasattr(st, 'secrets') and 'GROQ_API_KEY' in st.secrets:
+                groq_api_key = st.secrets['GROQ_API_KEY']
+            
+            if groq_api_key:
+                @st.cache_data
+                def generate_forensic_narrative(api_key, drivers, actions, gain, improvement, delayed_count):
+                    """Generate narrative using Groq Llama-3-70B"""
+                    try:
+                        # Set API key in environment for Groq client
+                        import os as os_module
+                        os_module.environ['GROQ_API_KEY'] = api_key
+                        client = Groq()
+                        
+                        prompt = f"""You are a Logistics Director preparing a board-level forensic report for the Végam delivery network.
+
+Key Findings:
+- Top delay drivers: {drivers}
+- Optimization actions implemented: {actions}
+- Total reward gain: {gain} points ({improvement}% improvement)
+- High-risk deliveries mitigated: {delayed_count}
+
+Write a 3-paragraph clinical, data-driven forensic narrative for executives that:
+1. Explains what the data reveals about network performance
+2. Clarifies why the identified factors matter for business continuity
+3. Recommends next steps with specific urgency
+
+Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative."""
+
+                        message = client.messages.create(
+                            model="llama-3-70b-versatile",
+                            max_tokens=500,
+                            messages=[
+                                {"role": "user", "content": prompt}
+                            ]
+                        )
+                        return message.content[0].text
+                    except Exception as e:
+                        return f"Unable to generate narrative: {str(e)}"
+                
+                # Prepare data for narrative
+                top_drivers = f"{df['top_driver_1'].mode()[0]} and {df['top_driver_2'].mode()[0]}"
+                actions = f"{summary['deliveries_rescheduled']} reschedules + {summary['deliveries_factory_swapped']} factory swaps"
+                
+                # Generate narrative
+                narrative = generate_forensic_narrative(
+                    groq_api_key,
+                    top_drivers,
+                    actions,
+                    int(summary['total_reward_gain']),
+                    round(summary['pct_improvement'], 1),
+                    summary['delayed_deliveries']
+                )
+                
+                st.markdown(f"""
+                <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace; line-height: 1.6;">
+                    <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
+                    <p>{narrative}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            else:
+                st.warning("⚠️ Groq API key not found. Set GROQ_API_KEY environment variable or add to Streamlit secrets.")
+                st.markdown(f"""
+                <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+                    <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
+                    <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
+                    <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
+                    <p><b>Prescription:</b> By implementing the <b>{summary['deliveries_rescheduled'] + summary['deliveries_factory_swapped']}</b> proposed interventions, the system can recapture approximately <b>{summary['total_reward_gain']:,.0f} points</b> in reward value, representing a <b>{summary['pct_improvement']}%</b> efficiency gain.</p>
+                    <p><b>Conclusion:</b> Immediate execution of the Day 1 Dispatch Ranking is recommended to mitigate the {summary['delayed_deliveries']} identified high-risk events.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+        except Exception as e:
+            st.error(f"⚠️ Groq API error: {str(e)}")
+            st.markdown(f"""
+            <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+                <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
+                <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
+                <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
+                <p><b>Prescription:</b> By implementing the <b>{summary['deliveries_rescheduled'] + summary['deliveries_factory_swapped']}</b> proposed interventions, the system can recapture approximately <b>{summary['total_reward_gain']:,.0f} points</b> in reward value, representing a <b>{summary['pct_improvement']}%</b> efficiency gain.</p>
+                <p><b>Conclusion:</b> Immediate execution of the Day 1 Dispatch Ranking is recommended to mitigate the {summary['delayed_deliveries']} identified high-risk events.</p>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+            <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
+            <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
+            <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
+            <p><b>Prescription:</b> By implementing the <b>{summary['deliveries_rescheduled'] + summary['deliveries_factory_swapped']}</b> proposed interventions, the system can recapture approximately <b>{summary['total_reward_gain']:,.0f} points</b> in reward value, representing a <b>{summary['pct_improvement']}%</b> efficiency gain.</p>
+            <p><b>Conclusion:</b> Immediate execution of the Day 1 Dispatch Ranking is recommended to mitigate the {summary['delayed_deliveries']} identified high-risk events.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
