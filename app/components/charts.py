@@ -197,11 +197,11 @@ def plot_reward_comparison(summary):
             tickfont=dict(family="DM Sans", size=13, color=CARBON),
         ),
         yaxis=dict(
+            **_grid_axes(),
             title="Points",
             zeroline=True,
             zerolinecolor=DUST,
             zerolinewidth=1.5,
-            **_grid_axes(),
             range=[
                 min(baseline, 0) - y_range_pad,
                 max(optimized, 0) + y_range_pad,
