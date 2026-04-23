@@ -15,72 +15,19 @@ def main():
     import json, os
 
     # ── HERO HEADER ─────────────────────────────────────────────
-    st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #1C1A17 0%, #252422 60%, #2d1f15 100%);
-    border-radius: 14px;
-    padding: 52px 48px;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.22);
-    border: 1px solid rgba(235,94,40,0.18);
-">
-    <!-- Decorative background circles -->
-    <div style="
-        position: absolute; top: -60px; right: -60px;
-        width: 300px; height: 300px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(235,94,40,0.12) 0%, transparent 70%);
-        pointer-events: none;
-    "></div>
-    <div style="
-        position: absolute; bottom: -80px; left: 20%;
-        width: 250px; height: 250px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(45,106,79,0.08) 0%, transparent 70%);
-        pointer-events: none;
-    "></div>
-
+    hero_html = """
+<div style="background: linear-gradient(135deg, #1C1A17 0%, #252422 60%, #2d1f15 100%); border-radius: 14px; padding: 52px 48px; margin-bottom: 2rem; position: relative; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.22); border: 1px solid rgba(235,94,40,0.18);">
+    <div style="position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(235,94,40,0.12) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -80px; left: 20%; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(45,106,79,0.08) 0%, transparent 70%); pointer-events: none;"></div>
     <div style="position: relative; z-index: 1;">
-        <div style="
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            color: #EB5E28;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        ">Operational Intelligence Platform</div>
-
-        <div style="
-            font-family: 'Playfair Display', serif;
-            font-size: 3.2rem;
-            font-weight: 900;
-            color: #FFFCF2;
-            line-height: 1.1;
-            margin-bottom: 16px;
-            letter-spacing: -0.02em;
-        ">VEGAM</div>
-
-        <div style="
-            width: 64px; height: 3px;
-            background: linear-gradient(90deg, #EB5E28, transparent);
-            margin-bottom: 20px;
-        "></div>
-
-        <p style="
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            color: #CCC5B9;
-            max-width: 520px;
-            line-height: 1.65;
-            margin: 0;
-        ">Real-time predictive forensics for supply chain resilience.
-        Identify bottlenecks before they impact your delivery timeline
-        using deep gradient boosting and game-theoretic explainability.</p>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #EB5E28; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 10px;">Operational Intelligence Platform</div>
+        <div style="font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 900; color: #FFFCF2; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em;">VEGAM</div>
+        <div style="width: 64px; height: 3px; background: linear-gradient(90deg, #EB5E28, transparent); margin-bottom: 20px;"></div>
+        <p style="font-family: 'DM Sans', sans-serif; font-size: 15px; color: #CCC5B9; max-width: 520px; line-height: 1.65; margin: 0;">Real-time predictive forensics for supply chain resilience. Identify bottlenecks before they impact your delivery timeline using deep gradient boosting and game-theoretic explainability.</p>
     </div>
 </div>
-""", unsafe_allow_html=True)
+"""
+    st.markdown(hero_html, unsafe_allow_html=True)
 
     # ── SYSTEM STATUS + QUICK STATS ─────────────────────────────
     summary_path = os.path.join(os.path.dirname(__file__), "data", "optimization_summary.json")
@@ -104,15 +51,7 @@ def main():
 
     # ── MODULE CARDS ────────────────────────────────────────────
     st.markdown("""
-<div style="
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #403D39;
-    margin-bottom: 16px;
-">Select a Module</div>
+<div style="font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #403D39; margin-bottom: 16px;">Select a Module</div>
 """, unsafe_allow_html=True)
 
     modules = [
@@ -150,64 +89,25 @@ def main():
     for col, m in zip(cols, modules):
         with col:
             st.markdown(f"""
-<div style="
-    background: white;
-    border: 1px solid rgba(204,197,185,0.5);
-    border-top: 3px solid {m['color']};
-    border-radius: 10px;
-    padding: 22px 20px;
-    height: 100%;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-    transition: all 0.2s ease;
-">
+<div style="background: white; border: 1px solid rgba(204,197,185,0.5); border-top: 3px solid {m['color']}; border-radius: 10px; padding: 22px 20px; height: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.07); transition: all 0.2s ease;">
     <div style="font-size: 22px; margin-bottom: 10px;">{m['icon']}</div>
-    <div style="
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 9px;
-        color: {m['color']};
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-    ">{m['tag']}</div>
-    <div style="
-        font-family: 'DM Sans', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        color: #252422;
-        margin-bottom: 10px;
-    ">{m['title']}</div>
-    <div style="
-        font-family: 'DM Sans', sans-serif;
-        font-size: 12px;
-        color: #403D39;
-        line-height: 1.55;
-    ">{m['desc']}</div>
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: {m['color']}; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 6px;">{m['tag']}</div>
+    <div style="font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #252422; margin-bottom: 10px;">{m['title']}</div>
+    <div style="font-family: 'DM Sans', sans-serif; font-size: 12px; color: #403D39; line-height: 1.55;">{m['desc']}</div>
 </div>
 """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── TECH STACK FOOTER ───────────────────────────────────────
-    st.markdown("""
-<div style="
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-">
+    footer_html = """
+<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
 """ + "".join([f"""
-<div style="
-    background: #252422;
-    color: #CCC5B9;
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-">{tag}</div>
+<div style="background: #252422; color: #CCC5B9; padding: 5px 14px; border-radius: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em;">{tag}</div>
 """ for tag in ["XGBoost v3.2.0", "TreeSHAP", "Streamlit", "Plotly", "TVASTR '26"]]) + """
 </div>
-""", unsafe_allow_html=True)
+"""
+    st.markdown(footer_html, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
