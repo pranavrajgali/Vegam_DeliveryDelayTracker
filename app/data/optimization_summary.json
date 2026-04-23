@@ -1,0 +1,16 @@
+{
+  "total_deliveries": 228,
+  "delayed_deliveries": 99,
+  "ontime_deliveries": 129,
+  "baseline_total_reward": -456.16,
+  "optimized_total_reward": 2599.92,
+  "total_reward_gain": 3056.08,
+  "pct_improvement": 669.96,
+  "deliveries_rescheduled": 89,
+  "deliveries_factory_swapped": 10,
+  "no_better_option": 0,
+  "threshold_hours": 7.238,
+  "model_test_mae": 1.358,
+  "model_test_r2": 0.8289,
+  "model_test_rmse": 1.768
+}
