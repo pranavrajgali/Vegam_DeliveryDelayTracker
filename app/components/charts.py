@@ -1,100 +1,305 @@
-import plotly.express as px
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import numpy as np
 
-PLOTLY_TEMPLATE = {
-    "layout": {
-        "paper_bgcolor": "#FFFCF2",
-        "plot_bgcolor":  "#FFFCF2",
-        "font":          {"family": "DM Sans", "color": "#252422"},
-        "colorway":      ["#EB5E28", "#403D39", "#CCC5B9", "#2D6A4F", "#E9C46A"],
-        "xaxis":         {"gridcolor": "#CCC5B9", "linecolor": "#403D39"},
-        "yaxis":         {"gridcolor": "#CCC5B9", "linecolor": "#403D39"},
-        "title":         {"font": {"family": "Playfair Display", "size": 24, "weight": 700}, "x": 0, "xanchor": "left"},
-    }
-}
+# ─── DESIGN TOKENS ────────────────────────────────────────────
+PAPRIKA  = "#EB5E28"
+CARBON   = "#252422"
+CHARCOAL = "#403D39"
+CREAM    = "#FFFCF2"
+DUST     = "#CCC5B9"
+GREEN    = "#2D6A4F"
+AMBER    = "#E9C46A"
 
-def apply_template(fig, title_text):
-    fig.update_layout(PLOTLY_TEMPLATE["layout"])
-    fig.update_layout(title_text=title_text)
-    return fig
+BASE_LAYOUT = dict(
+    paper_bgcolor=CREAM,
+    plot_bgcolor=CREAM,
+    font=dict(family="DM Sans", color=CARBON, size=12),
+    margin=dict(l=16, r=16, t=44, b=16),
+    title_font=dict(family="Playfair Display", size=17, color=CARBON),
+    legend=dict(
+        bgcolor="rgba(255,252,242,0.9)",
+        bordercolor=DUST,
+        borderwidth=1,
+        font=dict(family="DM Sans", size=11),
+    ),
+    hoverlabel=dict(
+        bgcolor=CARBON,
+        font_color=CREAM,
+        font_family="IBM Plex Mono",
+        font_size=12,
+        bordercolor=PAPRIKA,
+    ),
+)
 
+def _grid_axes():
+    return dict(
+        gridcolor="rgba(204,197,185,0.4)",
+        gridwidth=1,
+        zeroline=False,
+        linecolor=DUST,
+        linewidth=1,
+    )
+
+
+# ─── DELAY DISTRIBUTION ───────────────────────────────────────
 def plot_delay_distribution(df):
-    fig = px.histogram(df, x="predicted_delay_hours", nbins=30, 
-                       labels={"predicted_delay_hours": "PREDICTED DELAY (HOURS)"})
-    apply_template(fig, "DELAY DISTRIBUTION")
-    fig.update_traces(marker_line_color="#252422", marker_line_width=1)
-    return fig
-
-def plot_actual_vs_predicted(df):
-    fig = px.scatter(df, x="delay_hours", y="predicted_delay_hours", 
-                     labels={"delay_hours": "ACTUAL", "predicted_delay_hours": "PREDICTED"},
-                     trendline="ols")
-    apply_template(fig, "ACTUAL VS PREDICTED DELAYS")
-    return fig
-
-def plot_shap_global_importance(shap_values_df, feature_cols):
-    mean_abs_shap = shap_values_df[[f'shap_{c}' for c in feature_cols]].abs().mean().sort_values(ascending=True)
-    # Clean up labels for the plot
-    labels = [c.replace('shap_', '').replace('_', ' ').upper() for c in mean_abs_shap.index]
-    
-    fig = px.bar(x=mean_abs_shap.values, y=labels, orientation='h',
-                 labels={'x': 'MEAN |SHAP VALUE| (HOURS)', 'y': 'FEATURE'})
-    apply_template(fig, "GLOBAL FEATURE IMPORTANCE (SHAP)")
-    fig.update_traces(marker_color="#EB5E28")
-    return fig
-
-def plot_shap_waterfall(row, feature_cols):
-    # Base value
-    base_value = row['base_value']
-    
-    # SHAP values for the features
-    shap_vals = [row[f'shap_{c}'] for c in feature_cols]
-    feature_names = [c.replace('_', ' ').upper() for c in feature_cols]
-    
-    # Sort by absolute value for a better waterfall
-    sorted_indices = np.argsort(np.abs(shap_vals))
-    sorted_vals = [shap_vals[i] for i in sorted_indices]
-    sorted_names = [feature_names[i] for i in sorted_indices]
-    
-    fig = go.Figure(go.Waterfall(
-        name="SHAP", orientation="h",
-        measure=["relative"] * len(sorted_vals),
-        x=sorted_vals,
-        y=sorted_names,
-        base=base_value,
-        connector={"line":{"color":"#403D39"}},
-        decreasing={"marker":{"color":"#2D6A4F"}},
-        increasing={"marker":{"color":"#EB5E28"}}
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(
+        x=df["delay_hours"],
+        nbinsx=30,
+        marker_color=PAPRIKA,
+        marker_opacity=0.85,
+        marker_line=dict(width=0),
+        name="Delay Hours",
+        hovertemplate="<b>%{x:.1f}h</b><br>Count: %{y}<extra></extra>",
     ))
-    
-    fig.update_layout(PLOTLY_TEMPLATE["layout"])
-    fig.update_layout(title_text="SHAP EXPLANATION (WATERFALL)")
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="Delay Distribution",
+        xaxis=dict(title="Hours", **_grid_axes()),
+        yaxis=dict(title="Deliveries", **_grid_axes()),
+        bargap=0.08,
+    )
     return fig
 
-def plot_reward_comparison(summary):
-    fig = go.Figure(data=[
-        go.Bar(name='Baseline', x=['Total Reward'], y=[summary['baseline_total_reward']], marker_color='#403D39'),
-        go.Bar(name='Optimized', x=['Total Reward'], y=[summary['optimized_total_reward']], marker_color='#EB5E28')
-    ])
-    fig.update_layout(barmode='group')
-    apply_template(fig, "REWARD OPTIMIZATION IMPACT")
-    return fig
 
-def plot_factory_performance(df):
-    # Mean delay per factory
-    fac_perf = df.groupby('factory_id')['predicted_delay_hours'].mean().reset_index()
-    fig = px.bar(fac_perf, x='factory_id', y='predicted_delay_hours',
-                 labels={'predicted_delay_hours': 'AVG DELAY (HOURS)', 'factory_id': 'FACTORY'})
-    apply_template(fig, "AVG PREDICTED DELAY BY FACTORY")
-    fig.update_traces(marker_color="#403D39")
-    return fig
-
+# ─── PRIORITY BREAKDOWN ───────────────────────────────────────
 def plot_priority_breakdown(df):
-    pri_counts = df['priority_level'].value_counts().reset_index()
-    pri_counts.columns = ['priority_level', 'count']
-    fig = px.pie(pri_counts, values='count', names='priority_level',
-                 color_discrete_sequence=["#EB5E28", "#403D39", "#CCC5B9"])
-    apply_template(fig, "DELIVERY PRIORITY MIX")
+    grp = df.groupby("priority_level")["delay_hours"].mean().reset_index()
+    colors = [PAPRIKA if p == "High" else (AMBER if p == "Medium" else GREEN)
+              for p in grp["priority_level"]]
+    fig = go.Figure(go.Bar(
+        x=grp["priority_level"],
+        y=grp["delay_hours"],
+        marker_color=colors,
+        marker_line=dict(width=0),
+        text=[f"{v:.2f}h" for v in grp["delay_hours"]],
+        textposition="outside",
+        textfont=dict(family="IBM Plex Mono", size=11, color=CARBON),
+        hovertemplate="<b>%{x}</b><br>Avg Delay: %{y:.2f}h<extra></extra>",
+    ))
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="Avg Delay by Priority",
+        xaxis=dict(title="Priority", **_grid_axes()),
+        yaxis=dict(title="Avg Delay (h)", **_grid_axes()),
+        showlegend=False,
+    )
+    return fig
+
+
+# ─── SHAP GLOBAL IMPORTANCE ───────────────────────────────────
+def plot_shap_global_importance(shap_df, feature_cols):
+    shap_cols = [c for c in shap_df.columns if c.startswith("shap_")]
+    if not shap_cols:
+        shap_cols = [f"shap_{c}" for c in feature_cols if f"shap_{c}" in shap_df.columns]
+
+    mean_abs = {c.replace("shap_", ""): shap_df[c].abs().mean()
+                for c in shap_cols if c in shap_df.columns}
+    if not mean_abs:
+        return go.Figure()
+
+    importance = pd.Series(mean_abs).sort_values()
+    fig = go.Figure(go.Bar(
+        x=importance.values,
+        y=[f.upper().replace("_", " ") for f in importance.index],
+        orientation="h",
+        marker_color=[PAPRIKA if v == importance.max() else CHARCOAL for v in importance.values],
+        marker_line=dict(width=0),
+        text=[f"{v:.3f}" for v in importance.values],
+        textposition="outside",
+        textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
+        hovertemplate="<b>%{y}</b><br>Mean |SHAP|: %{x:.3f}h<extra></extra>",
+    ))
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="Global Feature Importance (Mean |SHAP|)",
+        xaxis=dict(title="Mean Absolute SHAP Value (hours)", **_grid_axes()),
+        yaxis=dict(tickfont=dict(family="IBM Plex Mono", size=10)),
+        height=380,
+    )
+    return fig
+
+
+# ─── FACTORY PERFORMANCE ──────────────────────────────────────
+def plot_factory_performance(df):
+    grp = df.groupby("factory_id")["delay_hours"].mean().reset_index().sort_values("delay_hours", ascending=False)
+    fig = go.Figure(go.Bar(
+        x=grp["factory_id"],
+        y=grp["delay_hours"],
+        marker_color=[PAPRIKA if i == 0 else (AMBER if i == 1 else CHARCOAL)
+                      for i in range(len(grp))],
+        marker_line=dict(width=0),
+        text=[f"{v:.2f}h" for v in grp["delay_hours"]],
+        textposition="outside",
+        textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
+        hovertemplate="<b>%{x}</b><br>Avg Delay: %{y:.2f}h<extra></extra>",
+    ))
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="Avg Delay by Factory",
+        xaxis=dict(title="Factory", **_grid_axes()),
+        yaxis=dict(title="Avg Delay (h)", **_grid_axes()),
+        showlegend=False,
+    )
+    return fig
+
+
+# ─── REWARD COMPARISON (FIXED) ────────────────────────────────
+def plot_reward_comparison(summary):
+    baseline  = summary["baseline_total_reward"]
+    optimized = summary["optimized_total_reward"]
+
+    # Two clean vertical bars side by side
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        name="Baseline",
+        x=["Baseline Reward"],
+        y=[baseline],
+        marker_color=CHARCOAL,
+        marker_line=dict(width=0),
+        text=[f"{baseline:+,.0f}"],
+        textposition="outside" if baseline >= 0 else "inside",
+        textfont=dict(family="IBM Plex Mono", size=13, color=CREAM),
+        width=0.35,
+        hovertemplate="<b>Baseline</b><br>%{y:+,.1f} pts<extra></extra>",
+    ))
+
+    fig.add_trace(go.Bar(
+        name="Optimized",
+        x=["Optimized Reward"],
+        y=[optimized],
+        marker_color=PAPRIKA,
+        marker_line=dict(width=0),
+        text=[f"{optimized:+,.0f}"],
+        textposition="outside",
+        textfont=dict(family="IBM Plex Mono", size=13, color=CARBON),
+        width=0.35,
+        hovertemplate="<b>Optimized</b><br>%{y:+,.1f} pts<extra></extra>",
+    ))
+
+    # Add a zero-line annotation
+    max_abs = max(abs(baseline), abs(optimized))
+    y_range_pad = max_abs * 0.25
+
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="Reward Optimization Impact",
+        barmode="group",
+        bargap=0.5,
+        bargroupgap=0.1,
+        xaxis=dict(
+            showgrid=False,
+            showline=False,
+            tickfont=dict(family="DM Sans", size=13, color=CARBON),
+        ),
+        yaxis=dict(
+            title="Points",
+            zeroline=True,
+            zerolinecolor=DUST,
+            zerolinewidth=1.5,
+            **_grid_axes(),
+            range=[
+                min(baseline, 0) - y_range_pad,
+                max(optimized, 0) + y_range_pad,
+            ],
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+        ),
+        height=320,
+        annotations=[
+            dict(
+                x=0.5,
+                y=max(optimized, 0) + y_range_pad * 0.5,
+                xref="paper",
+                yref="y",
+                text=f"<b>+{summary.get('total_reward_gain', optimized - baseline):,.0f} pts gain</b>  "
+                     f"({summary.get('pct_improvement', 0):.1f}% improvement)",
+                showarrow=False,
+                font=dict(family="IBM Plex Mono", size=12, color=GREEN),
+                align="center",
+            )
+        ],
+    )
+    return fig
+
+
+# ─── SHAP WATERFALL (FIXED) ───────────────────────────────────
+def plot_shap_waterfall(row, feature_cols):
+    """
+    Proper SHAP waterfall: base value → feature contributions → final prediction.
+    Each bar shows the cumulative running total, colored by direction.
+    """
+    shap_data = {}
+    for feat in feature_cols:
+        col = f"shap_{feat}"
+        if col in row.index:
+            shap_data[feat] = float(row[col])
+
+    if not shap_data:
+        fig = go.Figure()
+        fig.update_layout(**BASE_LAYOUT, title="SHAP Explanation (Waterfall)")
+        return fig
+
+    # Sort by absolute magnitude, top 10
+    shap_series = pd.Series(shap_data).reindex(
+        pd.Series(shap_data).abs().sort_values(ascending=False).index
+    ).head(10)
+
+    base = float(row.get("base_value", 7.0))
+    final_pred = base + shap_series.sum()
+
+    # Build waterfall segments
+    labels = ["Base Value"] + [f.upper().replace("_", " ") for f in shap_series.index] + ["Prediction"]
+    values = [base] + list(shap_series.values) + [final_pred]
+    measures = ["absolute"] + ["relative"] * len(shap_series) + ["total"]
+
+    # Color each bar
+    bar_colors = [CHARCOAL]
+    for v in shap_series.values:
+        bar_colors.append(PAPRIKA if v > 0 else GREEN)
+    bar_colors.append(PAPRIKA if final_pred > base else GREEN)
+
+    fig = go.Figure(go.Waterfall(
+        name="SHAP",
+        orientation="h",
+        measure=measures,
+        y=labels,
+        x=values,
+        connector=dict(
+            line=dict(color=DUST, width=1, dash="dot"),
+        ),
+        decreasing=dict(marker=dict(color=GREEN, line=dict(width=0))),
+        increasing=dict(marker=dict(color=PAPRIKA, line=dict(width=0))),
+        totals=dict(marker=dict(color=CHARCOAL, line=dict(width=0))),
+        text=[f"{v:+.2f}h" if i != 0 else f"{v:.2f}h" for i, v in enumerate(values)],
+        textposition="outside",
+        textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
+        hovertemplate="<b>%{y}</b><br>Value: %{x:+.3f}h<extra></extra>",
+    ))
+
+    fig.update_layout(
+        **BASE_LAYOUT,
+        title="SHAP Explanation (Waterfall)",
+        xaxis=dict(
+            title="Hours of Delay",
+            **_grid_axes(),
+        ),
+        yaxis=dict(
+            tickfont=dict(family="IBM Plex Mono", size=10),
+            autorange="reversed",
+        ),
+        height=420,
+        showlegend=False,
+        margin=dict(l=160, r=60, t=44, b=16),
+    )
+
     return fig
