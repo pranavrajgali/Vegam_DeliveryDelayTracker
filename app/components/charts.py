@@ -12,35 +12,35 @@ DUST     = "#CCC5B9"
 GREEN    = "#2D6A4F"
 AMBER    = "#E9C46A"
 
-BASE_LAYOUT = dict(
-    paper_bgcolor=CREAM,
-    plot_bgcolor=CREAM,
-    font=dict(family="DM Sans", color=CARBON, size=12),
-    margin=dict(l=16, r=16, t=44, b=16),
-    title_font=dict(family="Playfair Display", size=17, color=CARBON),
-    legend=dict(
-        bgcolor="rgba(255,252,242,0.9)",
-        bordercolor=DUST,
-        borderwidth=1,
-        font=dict(family="DM Sans", size=11),
-    ),
-    hoverlabel=dict(
-        bgcolor=CARBON,
-        font_color=CREAM,
-        font_family="IBM Plex Mono",
-        font_size=12,
-        bordercolor=PAPRIKA,
-    ),
-)
+BASE_LAYOUT = {
+    "paper_bgcolor": CREAM,
+    "plot_bgcolor": CREAM,
+    "font": {"family": "DM Sans", "color": CARBON, "size": 12},
+    "margin": {"l": 16, "r": 16, "t": 44, "b": 16},
+    "title_font": {"family": "Playfair Display", "size": 17, "color": CARBON},
+    "legend": {
+        "bgcolor": "rgba(255,252,242,0.9)",
+        "bordercolor": DUST,
+        "borderwidth": 1,
+        "font": {"family": "DM Sans", "size": 11},
+    },
+    "hoverlabel": {
+        "bgcolor": CARBON,
+        "font_color": CREAM,
+        "font_family": "IBM Plex Mono",
+        "font_size": 12,
+        "bordercolor": PAPRIKA,
+    },
+}
 
 def _grid_axes():
-    return dict(
-        gridcolor="rgba(204,197,185,0.4)",
-        gridwidth=1,
-        zeroline=False,
-        linecolor=DUST,
-        linewidth=1,
-    )
+    return {
+        "gridcolor": "rgba(204,197,185,0.4)",
+        "gridwidth": 1,
+        "zeroline": False,
+        "linecolor": DUST,
+        "linewidth": 1,
+    }
 
 
 # ─── DELAY DISTRIBUTION ───────────────────────────────────────
@@ -55,11 +55,11 @@ def plot_delay_distribution(df):
         name="Delay Hours",
         hovertemplate="<b>%{x:.1f}h</b><br>Count: %{y}<extra></extra>",
     ))
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="Delay Distribution",
-        xaxis=dict(title="Hours", **_grid_axes()),
-        yaxis=dict(title="Deliveries", **_grid_axes()),
+        xaxis={**_grid_axes(), "title": "Hours"},
+        yaxis={**_grid_axes(), "title": "Deliveries"},
         bargap=0.08,
     )
     return fig
@@ -80,11 +80,11 @@ def plot_priority_breakdown(df):
         textfont=dict(family="IBM Plex Mono", size=11, color=CARBON),
         hovertemplate="<b>%{x}</b><br>Avg Delay: %{y:.2f}h<extra></extra>",
     ))
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="Avg Delay by Priority",
-        xaxis=dict(title="Priority", **_grid_axes()),
-        yaxis=dict(title="Avg Delay (h)", **_grid_axes()),
+        xaxis={**_grid_axes(), "title": "Priority"},
+        yaxis={**_grid_axes(), "title": "Avg Delay (h)"},
         showlegend=False,
     )
     return fig
@@ -113,11 +113,11 @@ def plot_shap_global_importance(shap_df, feature_cols):
         textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
         hovertemplate="<b>%{y}</b><br>Mean |SHAP|: %{x:.3f}h<extra></extra>",
     ))
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="Global Feature Importance (Mean |SHAP|)",
-        xaxis=dict(title="Mean Absolute SHAP Value (hours)", **_grid_axes()),
-        yaxis=dict(tickfont=dict(family="IBM Plex Mono", size=10)),
+        xaxis={**_grid_axes(), "title": "Mean Absolute SHAP Value (hours)"},
+        yaxis={"tickfont": {"family": "IBM Plex Mono", "size": 10}},
         height=380,
     )
     return fig
@@ -137,11 +137,11 @@ def plot_factory_performance(df):
         textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
         hovertemplate="<b>%{x}</b><br>Avg Delay: %{y:.2f}h<extra></extra>",
     ))
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="Avg Delay by Factory",
-        xaxis=dict(title="Factory", **_grid_axes()),
-        yaxis=dict(title="Avg Delay (h)", **_grid_axes()),
+        xaxis={**_grid_axes(), "title": "Factory"},
+        yaxis={**_grid_axes(), "title": "Avg Delay (h)"},
         showlegend=False,
     )
     return fig
@@ -152,9 +152,7 @@ def plot_reward_comparison(summary):
     baseline  = summary["baseline_total_reward"]
     optimized = summary["optimized_total_reward"]
 
-    # Two clean vertical bars side by side
     fig = go.Figure()
-
     fig.add_trace(go.Bar(
         name="Baseline",
         x=["Baseline Reward"],
@@ -167,7 +165,6 @@ def plot_reward_comparison(summary):
         width=0.35,
         hovertemplate="<b>Baseline</b><br>%{y:+,.1f} pts<extra></extra>",
     ))
-
     fig.add_trace(go.Bar(
         name="Optimized",
         x=["Optimized Reward"],
@@ -181,39 +178,38 @@ def plot_reward_comparison(summary):
         hovertemplate="<b>Optimized</b><br>%{y:+,.1f} pts<extra></extra>",
     ))
 
-    # Add a zero-line annotation
     max_abs = max(abs(baseline), abs(optimized))
     y_range_pad = max_abs * 0.25
 
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="Reward Optimization Impact",
         barmode="group",
         bargap=0.5,
         bargroupgap=0.1,
-        xaxis=dict(
-            showgrid=False,
-            showline=False,
-            tickfont=dict(family="DM Sans", size=13, color=CARBON),
-        ),
-        yaxis=dict(
+        xaxis={
+            "showgrid": False,
+            "showline": False,
+            "tickfont": {"family": "DM Sans", "size": 13, "color": CARBON},
+        },
+        yaxis={
             **_grid_axes(),
-            title="Points",
-            zeroline=True,
-            zerolinecolor=DUST,
-            zerolinewidth=1.5,
-            range=[
+            "title": "Points",
+            "zeroline": True,
+            "zerolinecolor": DUST,
+            "zerolinewidth": 1.5,
+            "range": [
                 min(baseline, 0) - y_range_pad,
                 max(optimized, 0) + y_range_pad,
             ],
-        ),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-        ),
+        },
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "right",
+            "x": 1,
+        },
         height=320,
         annotations=[
             dict(
@@ -234,10 +230,6 @@ def plot_reward_comparison(summary):
 
 # ─── SHAP WATERFALL (FIXED) ───────────────────────────────────
 def plot_shap_waterfall(row, feature_cols):
-    """
-    Proper SHAP waterfall: base value → feature contributions → final prediction.
-    Each bar shows the cumulative running total, colored by direction.
-    """
     shap_data = {}
     for feat in feature_cols:
         col = f"shap_{feat}"
@@ -246,10 +238,10 @@ def plot_shap_waterfall(row, feature_cols):
 
     if not shap_data:
         fig = go.Figure()
-        fig.update_layout(**BASE_LAYOUT, title="SHAP Explanation (Waterfall)")
+        fig.update_layout(BASE_LAYOUT)
+        fig.update_layout(title="SHAP Explanation (Waterfall)")
         return fig
 
-    # Sort by absolute magnitude, top 10
     shap_series = pd.Series(shap_data).reindex(
         pd.Series(shap_data).abs().sort_values(ascending=False).index
     ).head(10)
@@ -257,16 +249,9 @@ def plot_shap_waterfall(row, feature_cols):
     base = float(row.get("base_value", 7.0))
     final_pred = base + shap_series.sum()
 
-    # Build waterfall segments
     labels = ["Base Value"] + [f.upper().replace("_", " ") for f in shap_series.index] + ["Prediction"]
     values = [base] + list(shap_series.values) + [final_pred]
     measures = ["absolute"] + ["relative"] * len(shap_series) + ["total"]
-
-    # Color each bar
-    bar_colors = [CHARCOAL]
-    for v in shap_series.values:
-        bar_colors.append(PAPRIKA if v > 0 else GREEN)
-    bar_colors.append(PAPRIKA if final_pred > base else GREEN)
 
     fig = go.Figure(go.Waterfall(
         name="SHAP",
@@ -274,9 +259,7 @@ def plot_shap_waterfall(row, feature_cols):
         measure=measures,
         y=labels,
         x=values,
-        connector=dict(
-            line=dict(color=DUST, width=1, dash="dot"),
-        ),
+        connector=dict(line=dict(color=DUST, width=1, dash="dot")),
         decreasing=dict(marker=dict(color=GREEN, line=dict(width=0))),
         increasing=dict(marker=dict(color=PAPRIKA, line=dict(width=0))),
         totals=dict(marker=dict(color=CHARCOAL, line=dict(width=0))),
@@ -286,20 +269,16 @@ def plot_shap_waterfall(row, feature_cols):
         hovertemplate="<b>%{y}</b><br>Value: %{x:+.3f}h<extra></extra>",
     ))
 
+    fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        **BASE_LAYOUT,
         title="SHAP Explanation (Waterfall)",
-        xaxis=dict(
-            title="Hours of Delay",
-            **_grid_axes(),
-        ),
-        yaxis=dict(
-            tickfont=dict(family="IBM Plex Mono", size=10),
-            autorange="reversed",
-        ),
+        xaxis={**_grid_axes(), "title": "Hours of Delay"},
+        yaxis={
+            "tickfont": {"family": "IBM Plex Mono", "size": 10},
+            "autorange": "reversed",
+        },
         height=420,
         showlegend=False,
-        margin=dict(l=160, r=60, t=44, b=16),
+        margin={"l": 160, "r": 60, "t": 44, "b": 16},
     )
-
     return fig
