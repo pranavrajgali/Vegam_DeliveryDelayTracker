@@ -2,12 +2,13 @@ import streamlit as st
 import pandas as pd
 import os
 import json
-from components.style import apply_custom_style
+from components.style import apply_custom_style, sidebar_logo
 from components.charts import plot_reward_comparison
 
 apply_custom_style()
+sidebar_logo()
 
-st.title("⚖️ DELIVERY OPTIMIZER")
+st.title("DELIVERY OPTIMIZER")
 
 report_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "final_delivery_report.csv")
 summary_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "optimization_summary.json")

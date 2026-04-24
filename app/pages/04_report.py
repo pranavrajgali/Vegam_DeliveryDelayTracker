@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import json
-from components.style import apply_custom_style
+from components.style import apply_custom_style, sidebar_logo
 
 try:
     from groq import Groq
@@ -11,8 +11,9 @@ except ImportError:
     GROQ_AVAILABLE = False
 
 apply_custom_style()
+sidebar_logo()
 
-st.title("📄 FORENSIC REPORT")
+st.title("FORENSIC REPORT")
 
 report_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "final_delivery_report.csv")
 summary_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "optimization_summary.json")
@@ -137,7 +138,7 @@ Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative
                 )
                 
                 st.markdown(f"""
-                <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace; line-height: 1.6;">
+                <div class="recommendation-card" style="font-family: 'IBM Plex Mono', monospace; line-height: 1.6;">
                     <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
                     <p>{narrative}</p>
                 </div>
@@ -146,7 +147,7 @@ Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative
             else:
                 st.warning("⚠️ Groq API key not found. Set GROQ_API_KEY environment variable or add to Streamlit secrets.")
                 st.markdown(f"""
-                <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+                <div class="recommendation-card" style="font-family: 'IBM Plex Mono', monospace;">
                     <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
                     <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
                     <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
@@ -158,7 +159,7 @@ Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative
         except Exception as e:
             st.error(f"⚠️ Groq API error: {str(e)}")
             st.markdown(f"""
-            <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+            <div class="recommendation-card" style="font-family: 'IBM Plex Mono', monospace;">
                 <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
                 <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
                 <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>
@@ -168,7 +169,7 @@ Keep it professional, no jargon, 200-300 words. Tone: clinical and authoritative
             """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-        <div style="background: #252422; color: #CCC5B9; padding: 30px; border-radius: 4px; border: 1px solid #403D39; font-family: 'IBM Plex Mono', monospace;">
+        <div class="recommendation-card" style="font-family: 'IBM Plex Mono', monospace;">
             <h4 style="color: #EB5E28 !important; margin-top:0;">FORENSIC NARRATIVE</h4>
             <p><b>Observation:</b> The network is currently exhibiting systemic delays primarily driven by <b>{df['top_driver_1'].mode()[0]}</b> and <b>{df['top_driver_2'].mode()[0]}</b>.</p>
             <p><b>Diagnosis:</b> High-risk deliveries are concentrated in <b>{df[df['risk_label']=='HIGH RISK']['factory_id'].mode()[0]}</b> operations. The collinearity between external severities and factory production variability is the primary source of variance.</p>

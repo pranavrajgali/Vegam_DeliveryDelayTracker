@@ -3,7 +3,7 @@ from components.style import apply_custom_style, sidebar_logo
 
 st.set_page_config(
     page_title="Vegam | Operational Intelligence",
-    page_icon="📦",
+    page_icon="box",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -14,20 +14,14 @@ sidebar_logo()
 def main():
     import json, os
 
-    # ── HERO HEADER ─────────────────────────────────────────────
-    hero_html = """
-<div style="background: linear-gradient(135deg, #1C1A17 0%, #252422 60%, #2d1f15 100%); border-radius: 14px; padding: 52px 48px; margin-bottom: 2rem; position: relative; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.22); border: 1px solid rgba(235,94,40,0.18);">
-    <div style="position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(235,94,40,0.12) 0%, transparent 70%); pointer-events: none;"></div>
-    <div style="position: absolute; bottom: -80px; left: 20%; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(45,106,79,0.08) 0%, transparent 70%); pointer-events: none;"></div>
-    <div style="position: relative; z-index: 1;">
-        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #EB5E28; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 10px;">Operational Intelligence Platform</div>
-        <div style="font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 900; color: #FFFCF2; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em;">VEGAM</div>
-        <div style="width: 64px; height: 3px; background: linear-gradient(90deg, #EB5E28, transparent); margin-bottom: 20px;"></div>
-        <p style="font-family: 'DM Sans', sans-serif; font-size: 15px; color: #CCC5B9; max-width: 520px; line-height: 1.65; margin: 0;">Real-time predictive forensics for supply chain resilience. Identify bottlenecks before they impact your delivery timeline using deep gradient boosting and game-theoretic explainability.</p>
-    </div>
+    # ── WELCOME HEADER ──────────────────────────────────────────
+    welcome_html = """
+<div style="background: white; border: 1px solid rgba(204,197,185,0.4); border-left: 4px solid #EB5E28; border-radius: 10px; padding: 30px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <h2 style="margin-top: 0; color: #252422;">Intelligence Command Center</h2>
+    <p style="color: #403D39; margin-bottom: 0;">Welcome to the <b>Vegam</b> operational dashboard. Access predictive forensics, delivery optimization, and root-cause analysis modules below.</p>
 </div>
 """
-    st.markdown(hero_html, unsafe_allow_html=True)
+    st.markdown(welcome_html, unsafe_allow_html=True)
 
     # ── SYSTEM STATUS + QUICK STATS ─────────────────────────────
     summary_path = os.path.join(os.path.dirname(__file__), "data", "optimization_summary.json")
@@ -56,28 +50,28 @@ def main():
 
     modules = [
         {
-            "icon": "◈",
+            "url": "overview",
             "title": "Operations Overview",
             "desc": "Fleet-level KPIs, delay distributions, factory performance rankings, and global SHAP importance across all deliveries.",
             "tag": "Page 01",
             "color": "#2D6A4F",
         },
         {
-            "icon": "⚖",
+            "url": "optimizer",
             "title": "Delivery Optimizer",
             "desc": "Daily dispatch priority rankings with automated reschedule and factory-swap recommendations to maximize reward.",
             "tag": "Page 02",
             "color": "#EB5E28",
         },
         {
-            "icon": "◉",
+            "url": "deep_dive",
             "title": "Deep Dive Analysis",
             "desc": "Per-delivery forensic reports with SHAP waterfall decomposition, what-if simulator, and granular root-cause attribution.",
             "tag": "Page 03",
             "color": "#E9C46A",
         },
         {
-            "icon": "≡",
+            "url": "report",
             "title": "Forensic Report",
             "desc": "Executive-grade summary with AI-powered narrative analysis, top critical interventions, and downloadable full dataset.",
             "tag": "Page 04",
@@ -85,16 +79,37 @@ def main():
         },
     ]
 
+    st.markdown("""
+    <style>
+    .module-card {
+        background: white; 
+        border: 1px solid rgba(204,197,185,0.5); 
+        border-radius: 10px; 
+        padding: 22px 20px; 
+        height: 100%; 
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07); 
+        transition: all 0.2s ease; 
+        cursor: pointer;
+    }
+    .module-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        border-color: #EB5E28;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     cols = st.columns(4)
     for col, m in zip(cols, modules):
         with col:
             st.markdown(f"""
-<div style="background: white; border: 1px solid rgba(204,197,185,0.5); border-top: 3px solid {m['color']}; border-radius: 10px; padding: 22px 20px; height: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.07); transition: all 0.2s ease;">
-    <div style="font-size: 22px; margin-bottom: 10px;">{m['icon']}</div>
-    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: {m['color']}; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 6px;">{m['tag']}</div>
-    <div style="font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #252422; margin-bottom: 10px;">{m['title']}</div>
-    <div style="font-family: 'DM Sans', sans-serif; font-size: 12px; color: #403D39; line-height: 1.55;">{m['desc']}</div>
-</div>
+<a href="{m['url']}" target="_self" style="text-decoration: none;">
+    <div class="module-card" style="border-top: 3px solid {m['color']};">
+        <div style="font-family: 'DM Mono', monospace; font-size: 9px; color: {m['color']}; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 6px;">{m['tag']}</div>
+        <div style="font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #252422; margin-bottom: 10px;">{m['title']}</div>
+        <div style="font-family: 'DM Sans', sans-serif; font-size: 12px; color: #403D39; line-height: 1.55;">{m['desc']}</div>
+    </div>
+</a>
 """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)

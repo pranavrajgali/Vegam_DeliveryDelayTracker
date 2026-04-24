@@ -228,57 +228,89 @@ def plot_reward_comparison(summary):
     return fig
 
 
-# ─── SHAP WATERFALL (FIXED) ───────────────────────────────────
 def plot_shap_waterfall(row, feature_cols):
-    shap_data = {}
-    for feat in feature_cols:
-        col = f"shap_{feat}"
-        if col in row.index:
-            shap_data[feat] = float(row[col])
+    """
+    Redesigned as a Diverging Impact Chart (Force Field) for maximum explainability
+    to non-technical judges, as horizontal waterfalls with alternating signs are visually confusing.
+    """
+    shap_data = {f: float(row[f"shap_{f}"]) for f in feature_cols if f"shap_{f}" in row.index}
 
     if not shap_data:
         fig = go.Figure()
         fig.update_layout(BASE_LAYOUT)
-        fig.update_layout(title="SHAP Explanation (Waterfall)")
+        fig.update_layout(title="Forensic Impact Breakdown")
         return fig
 
-    shap_series = pd.Series(shap_data).reindex(
-        pd.Series(shap_data).abs().sort_values(ascending=False).index
-    ).head(10)
+    # 1. Sort by absolute impact
+    sorted_features = sorted(shap_data.keys(), key=lambda x: abs(shap_data[x]), reverse=True)[:10]
+    
+    y_labels = [f.upper().replace("_", " ") for f in sorted_features]
+    deltas = [shap_data[f] for f in sorted_features]
+    
+    # Reverse lists so the biggest impact is at the top of the Plotly horizontal chart
+    y_labels.reverse()
+    deltas.reverse()
 
-    base = float(row.get("base_value", 7.0))
-    final_pred = base + shap_series.sum()
+    fig = go.Figure()
 
-    labels = ["Base Value"] + [f.upper().replace("_", " ") for f in shap_series.index] + ["Prediction"]
-    values = [base] + list(shap_series.values) + [final_pred]
-    measures = ["absolute"] + ["relative"] * len(shap_series) + ["total"]
-
-    fig = go.Figure(go.Waterfall(
-        name="SHAP",
+    # Positive = PAPRIKA (Increases Delay), Negative = GREEN (Decreases Delay)
+    colors = [PAPRIKA if d >= 0 else GREEN for d in deltas]
+    
+    fig.add_trace(go.Bar(
+        name="Impact",
         orientation="h",
-        measure=measures,
-        y=labels,
-        x=values,
-        connector=dict(line=dict(color=DUST, width=1, dash="dot")),
-        decreasing=dict(marker=dict(color=GREEN, line=dict(width=0))),
-        increasing=dict(marker=dict(color=PAPRIKA, line=dict(width=0))),
-        totals=dict(marker=dict(color=CHARCOAL, line=dict(width=0))),
-        text=[f"{v:+.2f}h" if i != 0 else f"{v:.2f}h" for i, v in enumerate(values)],
+        y=y_labels,
+        x=deltas,
+        marker=dict(color=colors, line=dict(width=0)),
+        text=[f"{d:+.2f}h" for d in deltas],
         textposition="outside",
-        textfont=dict(family="IBM Plex Mono", size=10, color=CARBON),
-        hovertemplate="<b>%{y}</b><br>Value: %{x:+.3f}h<extra></extra>",
+        textfont=dict(family="DM Mono", size=11, color=CARBON, weight=600),
+        hovertemplate="<b>%{y}</b><br>Impact: %{text}<extra></extra>",
+        cliponaxis=False
     ))
+
+    # Add a zero line
+    fig.add_vline(x=0, line_width=2, line_color=CHARCOAL)
+
+    # Add explanatory annotations for judges
+    max_abs_val = max([abs(d) for d in deltas]) if deltas else 1.0
+    
+    fig.add_annotation(
+        x=max_abs_val * 0.5,
+        y=len(y_labels) - 0.5,
+        text="INCREASES DELAY →",
+        showarrow=False,
+        font=dict(family="DM Mono", size=10, color=PAPRIKA, weight=700),
+        xanchor="center",
+        yanchor="bottom"
+    )
+    
+    fig.add_annotation(
+        x=-max_abs_val * 0.5,
+        y=len(y_labels) - 0.5,
+        text="← DECREASES DELAY",
+        showarrow=False,
+        font=dict(family="DM Mono", size=10, color=GREEN, weight=700),
+        xanchor="center",
+        yanchor="bottom"
+    )
 
     fig.update_layout(BASE_LAYOUT)
     fig.update_layout(
-        title="SHAP Explanation (Waterfall)",
-        xaxis={**_grid_axes(), "title": "Hours of Delay"},
-        yaxis={
-            "tickfont": {"family": "IBM Plex Mono", "size": 10},
-            "autorange": "reversed",
+        title="Forensic Impact Breakdown (SHAP)",
+        xaxis={
+            **_grid_axes(), 
+            "title": "Impact on Predicted Delay (Hours)",
+            "zeroline": False,
+            "range": [-(max_abs_val * 1.3), max_abs_val * 1.3] # Symmetrical padding
         },
-        height=420,
+        yaxis={
+            "tickfont": {"family": "DM Mono", "size": 10},
+        },
+        height=480,
         showlegend=False,
-        margin={"l": 160, "r": 60, "t": 44, "b": 16},
+        margin={"l": 160, "r": 60, "t": 80, "b": 40},
+        bargap=0.3,
     )
+
     return fig

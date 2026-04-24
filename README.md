@@ -24,13 +24,43 @@ A multi-page Streamlit application provides:
 - **Deep Dive Analysis**: Granular per-delivery forensic reports with SHAP waterfall visualizations.
 - **Executive Reporting**: Automated forensic narratives for board-level decision-making.
 
-## Technical Architecture
+## Methodology & Technical Implementation
 
-The project follows a decoupled architecture to ensure high performance:
-- **Model Core**: XGBoost 3.2.0 trained on historical logistics datasets.
-- **Data Pipeline**: A precomputation layer (`precompute.py`) that handles model inference, SHAP value calculation, and optimization simulations offline.
-- **Frontend**: Streamlit-based interface utilizing Plotly for high-density data visualization.
-- **Design System**: A custom industrial design language (Carbon/Paprika/Floral White) optimized for high-information density environments.
+### 1. Data Engineering & Feature Architecture
+The system processes multi-dimensional logistics data, transforming raw operational metrics into predictive signals:
+- **Environmental Factors**: Weather and Traffic indices are synthesized into an `external_severity` score.
+- **Operational Load**: Factory-side pressure is measured via `base_production_per_week` and `production_variability`.
+- **Complexity Metrics**: Structural risk is quantified through `routing_complexity` and `distance_km`.
+
+### 2. Predictive Modeling (The Engine)
+We utilize **XGBoost (Extreme Gradient Boosting)** as the core predictive engine:
+- **Model Selection**: Chosen for its superior performance on tabular logistics data and robustness against outliers.
+- **Loss Function**: Optimized for Mean Absolute Error (MAE) to provide tangible, hour-based delay estimates.
+- **Training Pipeline**: Includes automated hyperparameter tuning and cross-validation for high generalization.
+
+### 3. Explainability Forensics (The 'Why')
+Transparency is a core pillar. We implement **TreeSHAP (SHAP Values)** to decompose every prediction:
+- **Global Importance**: Identifies primary delay drivers across the entire fleet.
+- **Local Attribution**: Every delivery features a SHAP Waterfall Decomposition showing specific feature contributions.
+- **Game Theory Foundation**: Ensures a mathematically defensible forensic audit trail for every prediction.
+
+### 4. Optimization Engine (Actionable Intelligence)
+The **Optimization Module** uses a reward-based heuristic to suggest interventions:
+- **Reward Function**: Balances delivery priority against the magnitude of predicted delay.
+- **What-If Simulations**: Tests alternative temporal (reschedule) and spatial (factory swap) scenarios.
+- **Simulation Sandbox**: Allows real-time human-in-the-loop adjustments to observe non-linear impacts.
+
+### 5. AI Narrative Synthesis
+Integrated **Large Language Models (via Groq/Llama-3)** bridge the gap between data and decision-making:
+- **Automated Reporting**: Generates high-fidelity narrative forensic reports.
+- **Executive Summaries**: Translates technical SHAP values into plain-English "Top Critical Interventions."
+
+## Technical Stack
+- **ML Framework**: XGBoost
+- **Explainability**: SHAP (Lundberg et al.)
+- **Dashboard**: Streamlit (Custom Industrial Design System)
+- **Visualizations**: Plotly (High-contrast grid systems)
+- **AI Backend**: Groq / Llama-3-70B
 
 ## Installation
 

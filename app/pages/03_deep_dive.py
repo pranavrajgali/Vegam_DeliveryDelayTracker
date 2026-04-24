@@ -4,12 +4,13 @@ import os
 import json
 import joblib
 import numpy as np
-from components.style import apply_custom_style
+from components.style import apply_custom_style, sidebar_logo
 from components.charts import plot_shap_waterfall
 
 apply_custom_style()
+sidebar_logo()
 
-st.title("🔍 DELIVERY DEEP DIVE")
+st.title("DELIVERY DEEP DIVE")
 
 report_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "final_delivery_report.csv")
 params_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "best_params.json")
@@ -87,7 +88,7 @@ if os.path.exists(report_path) and os.path.exists(params_path):
     
     # ========== WHAT-IF SIMULATOR ==========
     st.markdown("---")
-    st.markdown("### 🎮 WHAT-IF SIMULATOR")
+    st.markdown("### WHAT-IF SIMULATOR")
     st.markdown("*Adjust factors below to see real-time impact on predictions.*")
     
     # Load model if available
@@ -153,37 +154,46 @@ if os.path.exists(report_path) and os.path.exists(params_path):
             baseline_pred = float(row['predicted_delay_hours'])
             delta_pred = sim_pred - baseline_pred
             
-            # Show results
-            col_res1, col_res2, col_res3 = st.columns(3)
+            # Show results in a redesigned, high-contrast layout
+            st.markdown("""
+            <div style="margin-top: 25px; margin-bottom: 10px;">
+                <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: #403D39; letter-spacing: 0.2em; text-transform: uppercase;">Simulation Outcome</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col_res1, col_res2 = st.columns(2)
             
             with col_res1:
-                st.metric("BASELINE", f"{baseline_pred:.2f}h")
-            
-            with col_res2:
-                color_delta = "#EB5E28" if delta_pred > 0 else "#2D6A4F"
-                sim_pred_val = f"{sim_pred:.2f}h"
                 st.markdown(f"""
-                <div style="text-align: center; padding: 15px; border-left: 3px solid {color_delta}; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 12px; color: #403D39;">SIMULATED PREDICTION</p>
-                    <h3 style="margin: 5px 0 0 0; color: {color_delta};">{sim_pred_val}</h3>
+                <div style="background: #FFFCF2; padding: 25px; border-radius: 10px; border: 1px solid #CCC5B9; border-left: 5px solid #403D39; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <p style="margin: 0; font-family: 'DM Mono', monospace; font-size: 11px; color: #403D39; letter-spacing: 0.1em; text-transform: uppercase;">Original State</p>
+                    <div style="margin: 10px 0 0 0; font-family: 'Playfair Display', serif; font-weight: 900; color: #252422 !important; font-size: 42px; line-height: 1;">{baseline_pred:.2f}h</div>
+                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #403D39; opacity: 0.8;">Baseline delay before intervention</p>
                 </div>
                 """, unsafe_allow_html=True)
             
-            with col_res3:
-                delta_color = "#EB5E28" if delta_pred > 0 else "#2D6A4F"
-                delta_sign = "+" if delta_pred > 0 else ""
-                delta_val = f"{delta_sign}{delta_pred:.2f}h"
+            with col_res2:
+                sim_color = "#EB5E28" if delta_pred > 0.01 else "#2D6A4F"
+                sim_label = "DELAY INCREASE" if delta_pred > 0.01 else "DELAY REDUCTION"
+                if abs(delta_pred) <= 0.01:
+                    sim_label = "NO CHANGE"
+                    sim_color = "#403D39"
+                    
                 st.markdown(f"""
-                <div style="text-align: center; padding: 15px; border-left: 3px solid {delta_color}; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 12px; color: #403D39;">DELTA</p>
-                    <h3 style="margin: 5px 0 0 0; color: {delta_color};">{delta_val}</h3>
+                <div style="background: #FFFCF2; padding: 25px; border-radius: 10px; border: 1px solid #CCC5B9; border-left: 5px solid {sim_color}; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <p style="margin: 0; font-family: 'DM Mono', monospace; font-size: 11px; color: #403D39; letter-spacing: 0.1em; text-transform: uppercase;">Simulated State</p>
+                    <div style="margin: 10px 0 0 0; font-family: 'Playfair Display', serif; font-weight: 900; color: {sim_color} !important; font-size: 42px; line-height: 1;">{sim_pred:.2f}h</div>
+                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: {sim_color}; color: white; padding: 3px 10px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.05em;">{sim_label}</span>
+                        <span style="font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 700; color: {sim_color};">{delta_pred:+.2f}h</span>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
         except Exception as e:
-            st.warning(f"⚠️ Model loading failed: {str(e)}")
+            st.warning(f"Model loading failed: {str(e)}")
     else:
-        st.info("💡 Model file not found for What-If simulation")
+        st.info("Model file not found for What-If simulation")
 
 else:
     st.error("Data files not found.")

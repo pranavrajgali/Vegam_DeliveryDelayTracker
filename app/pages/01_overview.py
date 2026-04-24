@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import json
-from components.style import apply_custom_style
+from components.style import apply_custom_style, sidebar_logo
 from components.charts import (
     plot_delay_distribution, 
     plot_shap_global_importance,
@@ -12,6 +12,7 @@ from components.charts import (
 
 # Ensure styling is applied
 apply_custom_style()
+sidebar_logo()
 
 st.title("OPERATIONS OVERVIEW")
 
@@ -48,9 +49,9 @@ if os.path.exists(report_path) and os.path.exists(summary_path):
         st.plotly_chart(plot_delay_distribution(df), width='stretch')
     with col_b:
         st.markdown(f"""
-        <div style="background: #252422; padding: 20px; border-radius: 4px; color: #FFFCF2;">
-            <h3 style="margin-top:0; color: #FFFCF2 !important;">RISK SUMMARY</h3>
-            <p style="color: #CCC5B9 !important;">Analysis of <b>{summary['total_deliveries']}</b> deliveries indicates critical bottlenecks.</p>
+        <div class="recommendation-card">
+            <h3 style="margin-top:0;">RISK SUMMARY</h3>
+            <p>Analysis of <b>{summary['total_deliveries']}</b> deliveries indicates critical bottlenecks.</p>
             <p><span class="badge-risk">HIGH RISK</span> {summary['delayed_deliveries']} deliveries</p>
             <p><span class="badge-ok">OPTIMIZED</span> {summary['total_deliveries'] - summary['delayed_deliveries']} deliveries</p>
             <hr style="border-color: #403D39;">

@@ -39,9 +39,9 @@ DISPLAY / HEADERS      "Playfair Display"  -- bold, editorial, premium feel
                         weights: 700, 900
                         use for: page titles, KPI numbers, section headers
 
-BODY / DATA            "IBM Plex Mono"     -- technical, precise, readable
-                        weights: 400, 500
-                        use for: tables, metrics, labels, code
+BODY / DATA            "DM Mono"           -- technical, precise, readable
+                        weights: 400, 500, 700
+                        use for: tables, metrics, labels, code, tags
 
 UI / NAVIGATION        "DM Sans"           -- clean, modern, neutral
                         weights: 400, 500, 600
@@ -103,7 +103,7 @@ Row odd:      #FFFCF2
 Row even:     #F5F0E8  (slightly darker cream)
 Row hover:    #EB5E28 10% opacity
 Border:       1px #CCC5B9
-Font:         IBM Plex Mono 13px
+Font:         DM Mono 13px
 Rank badge:   #EB5E28 circle, white number inside
 ```
 
@@ -149,12 +149,14 @@ Secondary:    bg transparent, border 1px #403D39, text #403D39
               hover: bg #403D39, text #FFFCF2
 ```
 
-### SHAP Waterfall Chart
+### Forensic Impact Chart (Diverging Bar)
 ```
-Positive bars (increasing delay):   #EB5E28
-Negative bars (reducing delay):     #2D6A4F
-Base value line:                    #403D39 dashed
-Feature labels:                     IBM Plex Mono 12px
+Design:                             Diverging bar chart centered at 0 (Force Field Analysis). Replaced standard waterfall for better explainability to non-technical judges.
+Positive bars (increases delay):    #EB5E28
+Negative bars (decreases delay):    #2D6A4F
+Zero baseline:                      #403D39 solid 2px
+Feature labels:                     DM Mono 11px
+Annotations:                        Explicit text arrows for "INCREASES DELAY →"
 ```
 
 ---
@@ -218,16 +220,13 @@ Section 1 — Delivery Summary (3-col)
 Section 2 — Prediction (2-col)
   LEFT:  Big number — predicted delay hours
          Status badge (HIGH RISK / ON TIME)
-         Reward score
-  RIGHT: SHAP waterfall chart
+         Reward score & Dispatch Rank
+  RIGHT: Forensic Impact Breakdown (Diverging SHAP Bar)
 
-Section 3 — Recommendation (full width card)
-  Action type badge (RESCHEDULE / FACTORY SWAP)
-  Current reward → Optimized reward
-  Arrow showing delta
-  Specific instruction:
-    "Swap to Factory F5 (294km) → predicted 6.93h delay"
-    "Reschedule to Apr 24 (severity 0.32) → predicted 7.22h"
+Section 3 — What-If Simulator (2-col)
+  LEFT: Original State Card (Carbon Black, Playfair Display #FFFCF2)
+  RIGHT: Simulated State Card (Floral White, Sentiment-colored border)
+         Shows dynamic DELAY REDUCTION / INCREASE badge with delta
 ```
 
 ### Page 4 — LLM Report
@@ -360,16 +359,14 @@ hr { border-color: var(--dust-grey); }
 ## App Title and Branding
 
 ```
-App name:     ProcureIQ
+App name:     Végam | Operational Intelligence
 Tagline:      Predict. Prioritize. Optimize.
-Team:         BackProp Bandits
-Event:        Udhbhav 2026
+Team:         Team Chirutha
+Event:        TVASTR '26
 
-Sidebar header:
-  PROCURE IQ
-  ──────────
-  Predict · Prioritize · Optimize
-  BackProp Bandits
+Sidebar Footer:
+  TEAM CHIRUTHA // TVASTR_36
+  LOGISTICS_INTEL // COORD: 12.97N 77.59E
 ```
 
 ---
