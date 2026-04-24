@@ -85,10 +85,21 @@ Végam was built to solve the **Adoption Problem** in enterprise AI. Operators i
 - **Pre-Computed Inference Caching**: The platform utilizes a stage-gated inference pipeline, pre-computing global SHAP arrays to ensure zero-latency loading in the Streamlit dashboard, regardless of fleet size.
 - **Stateless Architecture**: The web layer is entirely stateless, allowing for infinite horizontal scaling across cloud containers.
 
-### Future Roadmap
-1. **Real-Time IoT Telematics**: Integrating live GPS and vehicle telemetry for minute-by-minute dynamic rerouting.
-2. **Multi-Agent Reinforcement Learning (MARL)**: Evolving the optimizer from a heuristic search to a MARL environment where dispatch agents learn optimal strategies over millions of simulated years.
-3. **Multi-Modal Expansion**: Scaling the architecture to encompass rail, sea, and air freight nodes.
+### Future Roadmap & Strategic Prospects
+While Végam is already a highly capable intelligence platform, our development roadmap focuses on expanding its enterprise footprint:
+
+1. **ROI & Financial Impact Translation**:
+   - Translating "Delay Hours Reduced" directly into "Estimated Cost Saved" (e.g., *USD $24,500 saved per month*). This converts operational metrics into board-level financial language.
+2. **Prediction Confidence Intervals**:
+   - Upgrading from point predictions (e.g., "5.8 hours") to probabilistic bounds (e.g., "5.8 hours ± 30 minutes") using XGBoost tree variance. This quantifies ML uncertainty, a critical requirement for enterprise risk management.
+3. **Sustainability & ESG Impact Tracking**:
+   - Implementing a **Carbon Footprint Reduction** module. By optimizing routes and swapping factories, the system will track the direct reduction in CO2 emissions, aligning logistics optimization with corporate ESG goals.
+4. **Expanded "Digital Twin" Simulation**:
+   - Scaling our current single-delivery "What-If" simulator to a fleet-wide macroeconomic simulator, allowing executives to stress-test the entire supply chain against simulated global events (e.g., port strikes or extreme weather events).
+5. **Live Autonomous LLM Agents**:
+   - Evolving our current Groq narrative generation into an interactive, autonomous strategic agent that can proactively draft and email "Clinical Strategic Memos" to regional directors when systemic risks are detected.
+6. **Automated "Data Leakage" Auditing**:
+   - Implementing a continuous CI/CD pipeline check that mathematically audits temporal splits (ensuring future data never bleeds into training folds), maintaining bulletproof scientific rigor as the model retrains on live data.
 
 ---
 
