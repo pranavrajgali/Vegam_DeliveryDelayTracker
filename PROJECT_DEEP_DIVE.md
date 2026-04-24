@@ -63,5 +63,30 @@ Our UI is built on the **Industrial Intelligence** philosophy:
 
 ---
 
+## 9. Appendix: Feature & Module Inventory
+
+### Model Input Features (The "Predictors")
+Végam utilizes 12 primary signals to calculate delay forensics:
+1.  **Distance (km)**: Total transit length from factory to site.
+2.  **Weather Index**: Real-time atmospheric severity (0-10).
+3.  **Traffic Index**: Congestion and bottleneck intensity (0-10).
+4.  **External Severity**: A synthesized composite of Weather + Traffic impacts.
+5.  **Base Production**: Factory-specific weekly throughput capacity.
+6.  **Production Variability**: Statistical variance in factory output cycles.
+7.  **Routing Complexity**: Topological difficulty of the dispatch path (0-1).
+8.  **Supply Risk**: Real-time upstream material availability forecast.
+9.  **Priority Level**: Encoded dispatch urgency (High/Medium/Low).
+10. **Day of Week**: Temporal signal (Monday-Sunday).
+11. **Weekend Flag**: Binary indicator for weekend labor/traffic constraints.
+12. **Week of Month**: Monthly cycle position for period-end logistics surges.
+
+### Dashboard Functional Modules
+1.  **Operations Overview**: Fleet-level KPIs, global delay distributions, and macro-level performance metrics.
+2.  **Delivery Optimizer**: Automated dispatch prioritization and factory-swap recommendations to maximize reward.
+3.  **Deep Dive Analysis**: Per-delivery forensic audits, SHAP impact breakdowns, and the "What-If" simulation sandbox.
+4.  **Forensic Report**: AI-powered (Groq/Llama-3) narrative generation for executive summaries and downloadable data.
+
+---
+
 **TEAM CHIRUTHA // LOGISTICS_INTEL**
 *Predict. Prioritize. Optimize.*
