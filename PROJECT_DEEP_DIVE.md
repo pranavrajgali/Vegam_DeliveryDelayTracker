@@ -28,17 +28,28 @@ Our approach centers on three pillars:
 ## 4. Technical Architecture: Data Pipeline & Engineering
 The foundation of Végam is a robust data integration pipeline that merges supply, demand, transactional, and environmental datasets.
 
-### Data Merging & Leakage Prevention
-- **Objective Formulation**: Instead of treating this as a simple classification problem (Delayed vs. On-Time), we reformulated it as a **Continuous Regression Problem** (Target: `delay_hours` = *actual delivery time − expected delivery time*). This allows the model to capture exact severity.
-- **Leakage Prevention**: We rigorously stripped all post-delivery signals (Actual Time, Delay Flag) and high-cardinality noise to ensure the model learns true underlying logistics patterns rather than memorizing shortcuts.
+### Stage 1: Raw Features (Input Datasets)
+We consolidated four distinct datasets into a single model-ready foundation:
+- **Deliveries (Main Table)**: `delivery_id`, `factory_id`, `project_id`, `distance_km`, `expected_time_hours`, `actual_time_hours`, `delay_flag (0/1)`, `date`
+- **Factories (Supply Side)**: `factory_id`, `latitude`, `longitude`, `base_production_per_week`, `production_variability`, `max_storage`
+- **Projects (Demand Side)**: `project_id`, `latitude`, `longitude`, `demand`, `priority_level`
+- **External Factors (Daily Environment)**: `date`, `weather_index`, `traffic_index`
 
-### Advanced Feature Engineering
-Rather than using raw columns, we engineered high-signal, real-world features:
-- **Cyclical Encoding (Temporal Math)**: To preserve the continuity of time (ensuring Sunday is mathematically 1 day away from Monday), we transformed days and weeks using Sine/Cosine transforms:
-  - $x_{sin} = \sin\left(\frac{2\pi \cdot t}{T}\right)$ , $x_{cos} = \cos\left(\frac{2\pi \cdot t}{T}\right)$
-- **External Severity Interaction**: Engineered as a non-linear interaction ($ESI = \text{Weather} \cdot \alpha + \text{Traffic} \cdot \beta + (\text{Weather} \cdot \text{Traffic}) \cdot \gamma$), allowing the model to capture compounding risk effects where bad weather magnifies peak traffic.
-- **Routing Complexity**: Calculated as the ratio of actual road distance to straight-line Haversine distance.
-- **Supply Risk**: A composite metric weighing Factory Capacity against Historical Production Variability.
+### Stage 2: Feature Audit & Temporal Data Preparation
+To transition from raw data to a refined modeling dataset, we implemented a rigorous audit pipeline:
+
+1. **Chronological Sorting**: Delivery data is time-dependent. We sorted the dataset strictly by date before any processing.
+2. **Objective Formulation & Target Definition**: Instead of binary classification (Delayed vs. On-Time), we defined the continuous regression target **delay_hours** (*actual delivery time − expected delivery time*). We strictly separated Features (X) from the Target (y) and isolated metadata (factory/project IDs) for later optimization.
+3. **Leakage Prevention**: We removed post-delivery signals (`actual_time_hours`, `delay_flag`) and zero-variance features to prevent the model from memorizing shortcuts.
+4. **Validating Engineered Features**: Rather than assumption-based selection, we employed a **data-driven feature audit**. We explicitly validated derived features (like `external_severity` and `external_compound`) by comparing their target correlation against raw features to ensure they added true predictive value.
+5. **Temporal Train-Test Split**: We abandoned random splitting, which causes data leakage across time. We used a strict **time-based split** (First 80% dates = Train, Last 20% = Test) because in real-world logistics, we must predict future deliveries using past data.
+6. **TimeSeries Cross-Validation**: We utilized `TimeSeriesSplit` to evaluate the training data in folds that respect chronology (training on past data, validating on future data).
+7. **Feature Scaling Safety**: Standard Scaling was fit *only* on training data and subsequently applied to test data to prevent statistical leakage. (Note: Our primary XGBoost model handles unscaled data natively).
+
+### Final Features Used in Model (14 Features)
+The rigorous Stage 2 audit produced our final predictive feature set:
+1. `distance_km` | 2. `weather_index` | 3. `traffic_index` | 4. `base_production_per_week` | 5. `production_variability` | 6. `haversine_km` | 7. `routing_complexity` | 8. `supply_risk` | 9. `external_severity` | 10. `external_compound` | 11. `day_of_week` | 12. `is_weekend` | 13. `week_of_month` | 14. `priority_encoded`
+
 
 ---
 
