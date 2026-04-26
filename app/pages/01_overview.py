@@ -10,6 +10,12 @@ from components.charts import (
     plot_priority_breakdown
 )
 
+st.set_page_config(
+    page_title="Vegam | Operations Overview",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 # Ensure styling is applied
 apply_custom_style()
 sidebar_logo()

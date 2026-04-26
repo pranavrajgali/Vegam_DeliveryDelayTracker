@@ -141,7 +141,7 @@ button[data-testid="stSidebarCollapseButton"] * {
 
 /* Sidebar Brand Header */
 [data-testid="stSidebarNav"]::before {
-    content: "VEGAM";
+    content: "Vegam";
     display: block;
     font-family: 'Playfair Display', serif;
     font-size: 32px;

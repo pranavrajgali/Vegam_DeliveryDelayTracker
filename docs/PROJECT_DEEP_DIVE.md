@@ -53,21 +53,78 @@ The rigorous Stage 2 audit produced our final predictive feature set:
 
 ---
 
-## 5. Technical Architecture: Modeling & Optimization
-### Operational Loss Optimization: MAE vs. MSE
-Logistics delay distributions are typically **heavy-tailed**. Using the standard Mean Squared Error (MSE) loss function over-penalizes extreme outliers, sacrificing the accuracy of "typical" deliveries. Végam utilizes **Mean Absolute Error (MAE)** (`reg:absoluteerror`). By minimizing the first moment of the error, we produce a **Median-robust** model that provides highly reliable "typical case" predictions.
+## 5. Technical Architecture: Modeling & Evaluation (Stage 3)
 
-### Model Engine & Hyperparameter Tuning
-At the core sits a **Tuned XGBoost Regressor**. We utilized **Bayesian Optimization** (Optuna) across 50 iterations to search the hyperparameter space and optimize the Bias-Variance tradeoff:
-- **Learning Rate**: [0.01, 0.3] with early stopping.
-- **Max Depth**: [3, 9] to capture complex interactions without memorizing noise.
-- **Subsample/Colsample_bytree**: [0.6, 1.0] to enforce stochastic regularization.
+### 🔷 Step 1: Loading Data
+In this stage, we load the processed datasets generated from Stage 2:
+* **train_set.csv** → used for model training
+* **test_set.csv** → used for final evaluation
+* **train_set_scaled.csv** → scaled data for linear models
+* **test_set_scaled.csv** → scaled test data
+We separate **Features (X)** (input variables) from **Target (y)** (*delay_hours*).
 
-### Mathematically Consistent Forensics: TreeSHAP
-Standard "Feature Importance" metrics are globally biased. We implemented **TreeSHAP** to estimate **Shapley values**.
-- **Local Accuracy**: The sum of all SHAP values exactly equals the model prediction $f(x)$.
-- **Consistency**: If a feature's true contribution increases, its SHAP value mathematically cannot decrease.
-This algorithm forms the backbone of our Forensic Audit Trail.
+### 🔷 Step 2: Evaluation Metrics
+We define a common evaluation function to ensure consistency across all models.
+* **MAE (Mean Absolute Error)** → primary metric, represents average error in hours.
+* **RMSE** → penalizes larger errors more heavily.
+* **R² Score** → measures how well the model explains variance.
+* **MAPE** → percentage-based error, useful for business interpretation.
+
+### 🔷 Step 3 & 4: Baseline Models
+* **Null Model**: Always predicts the mean delay. Establishes a minimum benchmark.
+* **Ridge Regression**: Uses scaled data and L2 regularization to check if relationships are linear.
+
+### 🔷 Step 6 & 7: XGBoost Hyperparameter Tuning & Final Training
+We perform a **manual hyperparameter search**, tuning tree depth, learning rate, subsampling, and regularization. Each configuration is evaluated using **time-aware validation**. Using the best hyperparameters, we train the final model on the full training dataset with **early stopping** to prevent overfitting.
+
+### 🔷 Step 8 & 9: Predictions & Evaluation
+We generate non-negative predictions on training and test data. We evaluate real-world performance and perform an **overfitting check**.
+
+### 🔷 Step 10: Business Threshold — Risk Classification
+Although the model predicts continuous delay, we convert it into a classification: Deliveries with predicted delay above the **median** are labeled **High Risk**. Special focus is given to minimizing missed high-risk deliveries.
+
+### 🔷 Step 11 & 12: Model Comparison & Final Outputs
+We compare models (Null, Ridge, XGBoost) and save the final model (`xgboost_delay_model.pkl`), predictions, and `best_params.json`.
+
+---
+
+## 6. Technical Architecture: Explainability using SHAP (Stage 4)
+
+### 🔷 Step 1 & 2: Building SHAP Explainer
+We load the trained **XGBoost model** and use **TreeExplainer**, answering: *“For a given prediction, how much did each feature contribute?”* The explainer computes exact feature contributions efficiently against a background reference.
+
+### 🔷 Step 3 & 4: Global Feature Importance
+We compute **mean absolute SHAP values** to identify top drivers of delay in hours and visualize them using a bar plot.
+
+### 🔷 Step 5 & 6: SHAP Beeswarm & Dependence Plots
+* **Beeswarm plot**: Understand direction and magnitude of impact (e.g., severe weather leads to higher delays).
+* **Dependence Plots**: Analyze feature interactions (e.g., Weather vs Traffic).
+
+### 🔷 Step 7 & 8: Per-Delivery Explanations
+For each delivery, we generate a plain-English explanation of top contributing factors. We use a **waterfall plot** to explain a single prediction in detail (starting point, contributions, final delay).
+
+### 🔷 Step 9, 10 & 11: Factory-Level Insights & Final Outputs
+We aggregate SHAP values by factory to find localized bottlenecks. We save `shap_explanations.csv`, `shap_values.csv`, and all visualization plots.
+
+---
+
+## 7. Technical Architecture: Optimization & Decision System (Stage 5)
+
+### 🔷 Step 1 & 2: Objective & Reward Framework
+After predicting delays, we convert predictions into actionable strategies. We define a **business-aligned reward function**:
+* +10 (On-time), −15 (Delayed), +5 (High-priority), −2 × excess delay hours.
+Decisions are based on *predicted delay*, reflecting real-world dispatch conditions.
+
+### 🔷 Step 3, 4 & 5: Baseline & Simulations
+We compute current reward, then simulate:
+* **Rescheduling Simulation**: Running delivery on different dates to minimize delay/maximize reward.
+* **Factory Swap Simulation**: Assigning to a different factory, maintaining constraints.
+
+### 🔷 Step 6 & 7: Best Action & Priority Ranking
+We choose the option with **maximum reward gain**. We compute **Reward-at-Risk** to rank deliveries per day, ensuring critical deliveries are handled first.
+
+### 🔷 Step 8, 9, 10 & 11: Final Output System
+We generate a complete decision report per delivery (predicted delay, current reward, recommended action, SHAP explanation). We compare baseline vs optimized reward to measure total business impact. Outputs: `final_delivery_report.csv` and `optimization_summary.json`.
 
 ---
 

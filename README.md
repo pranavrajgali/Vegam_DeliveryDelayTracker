@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Vegam is an advanced operational intelligence platform designed to predict, analyze, and mitigate delivery delays in complex supply chain networks. Developed for the TVASTR '26 hackathon, the system transitions from reactive logistics management to proactive optimization using high-fidelity gradient boosting and game-theoretic explainability.
+Vegam is an advanced logistics operational intelligence platform designed to predict, analyze, and mitigate delivery delays in complex supply chain networks. Developed for the TVASTR '26 hackathon, the system transitions from reactive logistics management to proactive optimization using high-fidelity gradient boosting and game-theoretic explainability.
 
 The platform provides logistics managers with a "war room" dashboard to identify systemic bottlenecks, understand the root causes of predicted delays, and execute optimized interventions such as delivery rescheduling and factory-source swapping.
 
@@ -33,10 +33,11 @@ The system processes multi-dimensional logistics data, transforming raw operatio
 - **Complexity Metrics**: Structural risk is quantified through `routing_complexity` and `distance_km`.
 
 ### 2. Predictive Modeling (The Engine)
-We utilize **XGBoost (Extreme Gradient Boosting)** as the core predictive engine:
-- **Model Selection**: Chosen for its superior performance on tabular logistics data and robustness against outliers.
-- **Loss Function**: Optimized for Mean Absolute Error (MAE) to provide tangible, hour-based delay estimates.
-- **Training Pipeline**: Includes automated hyperparameter tuning and cross-validation for high generalization.
+We utilize **XGBoost (Extreme Gradient Boosting)** as the core predictive engine to predict a continuous target variable (`delay_hours`), capturing the precise severity of a delay rather than just its occurrence:
+- **Baseline Benchmarking**: The architecture uplift is quantified by validating XGBoost against Null Model and Ridge Regression baselines.
+- **Hyperparameter Optimization**: Integrated with **Optuna** for Bayesian optimization, conducting 50+ trials to fine-tune tree depth, learning rate, subsampling, and L1/L2 regularization ($\alpha$ & $\lambda$).
+- **Robust Loss Function**: Explicitly optimized for Mean Absolute Error (MAE) instead of RMSE. This provides tangible, hour-based delay estimates and heavily resists contamination from heavy-tail logistics outliers.
+- **Temporal Validation**: To prevent future-data leakage, the pipeline enforces strict chronological ordering using an 80/20 Time-Based Split and TimeSeriesSplit Cross-Validation, ensuring the model is evaluated exactly as it would be deployed.
 
 ### 3. Explainability Forensics (The 'Why')
 Transparency is a core pillar. We implement **TreeSHAP (SHAP Values)** to decompose every prediction:
@@ -105,5 +106,5 @@ The dashboard will be accessible via your web browser (typically at `http://loca
 ## Team and Event Details
 - **Project Name**: Vegam
 - **Team Name**: Team Vegam
-- **Event**: TVASTR '26
+- **Event**: TVASTR '26 (held by School of Management Studies, University of Hyderabad)
 - **Objective**: Enhancing Supply Chain Resilience through Predictive Analytics

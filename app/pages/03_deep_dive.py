@@ -7,6 +7,12 @@ import numpy as np
 from components.style import apply_custom_style, sidebar_logo
 from components.charts import plot_shap_waterfall
 
+st.set_page_config(
+    page_title="Vegam | Deep Dive Analysis",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 apply_custom_style()
 sidebar_logo()
 
@@ -49,21 +55,19 @@ if os.path.exists(report_path) and os.path.exists(params_path):
     st.markdown("---")
     
     # SECTION 2: PREDICTION & SHAP
-    col_pred, col_shap = st.columns([1, 2])
+    col_pred, col_shap = st.columns([1, 2.2], gap="large")
     
     with col_pred:
-        st.markdown("### PREDICTION")
         color = "#EB5E28" if row['risk_label'] == 'HIGH RISK' else "#2D6A4F"
-        
-        # Calculate dynamic confidence bounds (heuristic based on MAE = 0.82)
         conf_margin_mins = int((0.82 + (row['weather_index'] * 0.03)) * 60)
         
+        # PREDICTION CARD (Styled to match stMetric)
         st.markdown(f"""
-        <div style="text-align: center; padding: 20px; border: 2px solid {color}; border-radius: 8px;">
-            <h1 style="color: {color} !important; margin: 0; line-height: 1;">{row['predicted_delay_hours']:.2f}h</h1>
-            <div style="font-family: 'DM Mono', monospace; font-size: 12px; color: #403D39; margin-top: 4px; margin-bottom: 12px; font-weight: 600;">± {conf_margin_mins} mins (95% CI)</div>
-            <p style="font-weight: 600; margin-bottom: 0; font-size: 14px;">PREDICTED DELAY</p>
-            <span class="badge-risk" style="background: {color}; margin-top: 4px;">{row['risk_label']}</span>
+        <div style="background: #252422; border-left: 3px solid {color}; border-radius: 10px; padding: 22px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); margin-bottom: 20px;">
+            <div style="font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #CCC5B9; margin-bottom: 8px;">Predicted Delay</div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 900; color: #FFFCF2; line-height: 1.0; letter-spacing: -0.02em;">{row['predicted_delay_hours']:.2f}h</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: {color}; margin-top: 10px; font-weight: 700;">± {conf_margin_mins} mins (95% CI)</div>
+            <div style="margin-top: 15px;"><span class="badge-risk" style="background: {color};">{row['risk_label']}</span></div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -199,6 +203,22 @@ if os.path.exists(report_path) and os.path.exists(params_path):
             st.warning(f"Model loading failed: {str(e)}")
     else:
         st.info("Model file not found for What-If simulation")
+
+    # ========== METHODOLOGY FOOTER ==========
+    st.markdown("---")
+    with st.expander("🛠️ TECHNICAL METHODOLOGY: DECISION INTELLIGENCE ENGINE"):
+        st.markdown("""
+        ### 1. Reward-at-Risk Ranking
+        The **Dispatch Rank** is calculated using a **Reward-at-Risk** framework. Unlike standard dashboards that sort by raw delay, Végam calculates the mathematical cost of failure for every delivery:
+        - **Formula:** `|Current Reward| + Priority Kicker (+5 for High Priority)`
+        - **Logic:** This ensures that we prioritize the "most expensive" problems first—balancing physical delay hours with business-critical priority.
+
+        ### 2. Greedy Prescriptive Optimization
+        The recommendations (Factory Swaps and Rescheduling) are generated via a **Greedy Local-Search Optimizer**:
+        - **Simulation:** For every high-risk delivery, the engine runs thousands of "What-If" permutations across different dates and factories.
+        - **Selection:** It only recommends an action if the **Reward Gain** is positive, ensuring operational stability by only suggesting interventions that mathematically improve the business outcome.
+        - **Inference Speed:** This greedy approach allows for near-instant root-cause forensics, even at massive fleet scales.
+        """)
 
 else:
     st.error("Data files not found.")

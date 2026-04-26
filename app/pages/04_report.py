@@ -1,4 +1,11 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="Vegam | Forensic Report",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 import pandas as pd
 import os
 import json

@@ -5,6 +5,12 @@ import json
 from components.style import apply_custom_style, sidebar_logo
 from components.charts import plot_reward_comparison
 
+st.set_page_config(
+    page_title="Vegam | Delivery Optimizer",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 apply_custom_style()
 sidebar_logo()
 
